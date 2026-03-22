@@ -40,4 +40,32 @@ router.get('/:id/tasks', (req, res, next) => {
   res.json(tasks);
 });
 
+router.patch('/:id', (req, res, next) => {
+  const client = db.prepare('SELECT * FROM clients WHERE id = ?').get(req.params.id);
+  if (!client) return next({ status: 404, message: 'Client not found' });
+
+  const { company_name, country, entity_type } = req.body;
+  
+  const updated = {
+    company_name: company_name !== undefined ? company_name.trim() : client.company_name,
+    country: country !== undefined ? country.trim() : client.country,
+    entity_type: entity_type !== undefined ? entity_type.trim() : client.entity_type,
+  };
+
+  db.prepare(
+    `UPDATE clients SET company_name=?, country=?, entity_type=? WHERE id=?`
+  ).run(updated.company_name, updated.country, updated.entity_type, req.params.id);
+
+  const result = db.prepare('SELECT * FROM clients WHERE id = ?').get(req.params.id);
+  res.json(result);
+});
+
+router.delete('/:id', (req, res, next) => {
+  const client = db.prepare('SELECT * FROM clients WHERE id = ?').get(req.params.id);
+  if (!client) return next({ status: 404, message: 'Client not found' });
+
+  db.prepare('DELETE FROM clients WHERE id = ?').run(req.params.id);
+  res.status(204).send();
+});
+
 module.exports = router;

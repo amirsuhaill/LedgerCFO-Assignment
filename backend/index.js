@@ -3,6 +3,7 @@ const cors = require('cors');
 const errorHandler = require('./src/middleware/errorhandler');
 const clientRoutes = require('./src/routes/clients');
 const taskRoutes = require('./src/routes/tasks');
+const statsRoutes = require('./src/routes/stats');
 const seed = require('./src/seed');
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.json());
 // Routes
 app.use('/api/clients', clientRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));

@@ -6,6 +6,27 @@ const VALID_CATEGORIES = ['Tax', 'Filing', 'Audit', 'Payroll', 'Legal'];
 const VALID_STATUSES = ['Pending', 'In Progress', 'Completed'];
 const VALID_PRIORITIES = ['Low', 'Medium', 'High'];
 
+// GET /api/tasks
+router.get('/', (req, res) => {
+  const { status, category } = req.query;
+  let query = 'SELECT * FROM compliance_tasks WHERE 1=1';
+  const params = [];
+
+  if (status) { query += ' AND status = ?'; params.push(status); }
+  if (category) { query += ' AND category = ?'; params.push(category); }
+  query += ' ORDER BY due_date ASC';
+
+  const tasks = db.prepare(query).all(...params);
+  res.json(tasks);
+});
+
+// GET /api/tasks/:id
+router.get('/:id', (req, res, next) => {
+  const task = db.prepare('SELECT * FROM compliance_tasks WHERE id = ?').get(req.params.id);
+  if (!task) return next({ status: 404, message: 'Task not found' });
+  res.json(task);
+});
+
 // POST /api/tasks
 router.post('/', (req, res, next) => {
   const { client_id, title, description, category, due_date, status = 'Pending', priority = 'Medium' } = req.body;
