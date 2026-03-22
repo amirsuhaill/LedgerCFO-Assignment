@@ -10,7 +10,14 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
 
-app.use(cors({ origin: FRONTEND_ORIGIN }));
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow requests with no origin (curl, Postman) and any localhost port in dev
+    if (!origin || /^http:\/\/localhost(:\d+)?$/.test(origin)) return cb(null, true);
+    if (origin === FRONTEND_ORIGIN) return cb(null, true);
+    cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
+}));
 app.use(express.json());
 
 // Routes
