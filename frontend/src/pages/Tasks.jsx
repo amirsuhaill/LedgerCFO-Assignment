@@ -21,15 +21,15 @@ export default function Tasks() {
     <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
       <p className="text-red-500 font-medium">Could not connect to backend</p>
       <p className="text-slate-400 text-sm">{error}</p>
-      <p className="text-slate-400 text-xs">Make sure the backend is running on <code className="bg-slate-100 px-1 rounded">http://localhost:3001</code></p>
+      <p className="text-slate-400 text-xs">Make sure the backend is running on <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">http://localhost:3001</code></p>
     </div>
   );
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">All Tasks</h1>
-        <p className="text-slate-500 text-sm mt-1">{tasks.length} task{tasks.length !== 1 ? 's' : ''} across all clients</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">All Tasks</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{tasks.length} task{tasks.length !== 1 ? 's' : ''} across all clients</p>
       </div>
       <TaskTable tasks={tasks} onRefresh={load} showClientCol={true} />
     </div>

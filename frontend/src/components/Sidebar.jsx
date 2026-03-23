@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, ClipboardList, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Users, ClipboardList, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -8,16 +9,25 @@ const links = [
 ];
 
 export default function Sidebar() {
+  const { dark, toggle } = useTheme();
+
   return (
-    <aside className="w-64 min-h-screen bg-slate-900 flex flex-col">
+    <aside className="w-64 min-h-screen bg-slate-900 dark:bg-slate-950 dark:border-r dark:border-slate-800 flex flex-col">
       <div className="flex items-center gap-3 px-6 py-6 border-b border-slate-700/50">
-        <div className="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center">
+        <div className="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center shrink-0">
           <ShieldCheck size={20} className="text-white" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <p className="text-white font-semibold text-sm leading-tight">ComplianceHub</p>
           <p className="text-slate-400 text-xs">Task Manager</p>
         </div>
+        <button
+          onClick={toggle}
+          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all shrink-0"
+          title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {dark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
@@ -41,7 +51,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-6 py-4 border-t border-slate-700/50">
-        <p className="text-slate-500 text-xs">© 2026 ComplianceHub</p>
+        <p className="text-slate-600 text-xs">© 2026 ComplianceHub</p>
       </div>
     </aside>
   );

@@ -6,12 +6,12 @@ import { StatusBadge, PriorityBadge, CategoryBadge } from '../components/Badge';
 
 function StatCard({ icon: Icon, label, value, color, sub }) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700/50">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-slate-500 font-medium">{label}</p>
-          <p className="text-3xl font-bold text-slate-800 mt-1">{value ?? '—'}</p>
-          {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{label}</p>
+          <p className="text-3xl font-bold text-slate-800 dark:text-slate-100 mt-1">{value ?? '—'}</p>
+          {sub && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{sub}</p>}
         </div>
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>
           <Icon size={22} className="text-white" />
@@ -39,9 +39,7 @@ export default function Dashboard() {
   }, []);
 
   const overdue = tasks.filter(t => isOverdue(t.due_date, t.status));
-  const upcoming = tasks
-    .filter(t => t.status !== 'Completed' && !isOverdue(t.due_date, t.status))
-    .slice(0, 5);
+  const upcoming = tasks.filter(t => t.status !== 'Completed' && !isOverdue(t.due_date, t.status)).slice(0, 5);
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -53,7 +51,7 @@ export default function Dashboard() {
     <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
       <p className="text-red-500 font-medium">Could not connect to backend</p>
       <p className="text-slate-400 text-sm">{error}</p>
-      <p className="text-slate-400 text-xs">Make sure the backend is running on <code className="bg-slate-100 px-1 rounded">http://localhost:3001</code></p>
+      <p className="text-slate-400 text-xs">Make sure the backend is running on <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">http://localhost:3001</code></p>
     </div>
   );
 
@@ -64,11 +62,10 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-        <p className="text-slate-500 text-sm mt-1">Overview of your compliance workload</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Dashboard</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Overview of your compliance workload</p>
       </div>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard icon={Users} label="Total Clients" value={stats?.total_clients} color="bg-indigo-500" />
         <StatCard icon={ClipboardList} label="Total Tasks" value={stats?.tasks?.total} color="bg-slate-600" />
@@ -77,21 +74,21 @@ export default function Dashboard() {
       </div>
 
       {/* Progress bar */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700/50">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <TrendingUp size={18} className="text-indigo-500" />
-            <span className="text-sm font-semibold text-slate-700">Overall Completion</span>
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Overall Completion</span>
           </div>
-          <span className="text-sm font-bold text-indigo-600">{completionRate}%</span>
+          <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{completionRate}%</span>
         </div>
-        <div className="w-full bg-slate-100 rounded-full h-3">
+        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3">
           <div
             className="bg-gradient-to-r from-indigo-500 to-emerald-500 h-3 rounded-full transition-all duration-700"
             style={{ width: `${completionRate}%` }}
           />
         </div>
-        <div className="flex gap-6 mt-4 text-xs text-slate-500">
+        <div className="flex gap-6 mt-4 text-xs text-slate-500 dark:text-slate-400">
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />Pending: {stats?.tasks?.pending}</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />In Progress: {stats?.tasks?.in_progress}</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />Completed: {stats?.tasks?.completed}</span>
@@ -99,23 +96,23 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Overdue Tasks */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100">
+        {/* Overdue */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
+          <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
             <AlertCircle size={18} className="text-red-500" />
-            <h2 className="font-semibold text-slate-800 text-sm">Overdue Tasks</h2>
+            <h2 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">Overdue Tasks</h2>
             {overdue.length > 0 && (
-              <span className="ml-auto bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">{overdue.length}</span>
+              <span className="ml-auto bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold px-2 py-0.5 rounded-full">{overdue.length}</span>
             )}
           </div>
           {overdue.length === 0 ? (
-            <div className="px-6 py-10 text-center text-slate-400 text-sm">No overdue tasks 🎉</div>
+            <div className="px-6 py-10 text-center text-slate-400 dark:text-slate-600 text-sm">No overdue tasks 🎉</div>
           ) : (
-            <ul className="divide-y divide-slate-50">
+            <ul className="divide-y divide-slate-50 dark:divide-slate-800">
               {overdue.slice(0, 6).map(task => (
                 <li key={task.id} className="px-6 py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-700 truncate">{task.title}</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{task.title}</p>
                     <p className="text-xs text-red-500 mt-0.5">Due {task.due_date}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -128,22 +125,22 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Upcoming Tasks */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100">
+        {/* Upcoming */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
+          <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
             <Clock size={18} className="text-indigo-500" />
-            <h2 className="font-semibold text-slate-800 text-sm">Upcoming Tasks</h2>
+            <h2 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">Upcoming Tasks</h2>
             <Link to="/tasks" className="ml-auto text-xs text-indigo-500 hover:underline">View all</Link>
           </div>
           {upcoming.length === 0 ? (
-            <div className="px-6 py-10 text-center text-slate-400 text-sm">No upcoming tasks</div>
+            <div className="px-6 py-10 text-center text-slate-400 dark:text-slate-600 text-sm">No upcoming tasks</div>
           ) : (
-            <ul className="divide-y divide-slate-50">
+            <ul className="divide-y divide-slate-50 dark:divide-slate-800">
               {upcoming.map(task => (
                 <li key={task.id} className="px-6 py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-700 truncate">{task.title}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Due {task.due_date}</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{task.title}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Due {task.due_date}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <StatusBadge status={task.status} />
