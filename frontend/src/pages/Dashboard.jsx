@@ -29,12 +29,13 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    Promise.all([getStats(), getTasks()]).then(([s, t]) => {
-      setStats(s);
-      setTasks(t);
-    }).finally(() => setLoading(false));
+    Promise.all([getStats(), getTasks()])
+      .then(([s, t]) => { setStats(s); setTasks(t); })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
   }, []);
 
   const overdue = tasks.filter(t => isOverdue(t.due_date, t.status));
@@ -42,15 +43,21 @@ export default function Dashboard() {
     .filter(t => t.status !== 'Completed' && !isOverdue(t.due_date, t.status))
     .slice(0, 5);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader className="animate-spin text-indigo-500" size={28} />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <Loader className="animate-spin text-indigo-500" size={28} />
+    </div>
+  );
 
-  const completionRate = stats?.tasks.total
+  if (error) return (
+    <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
+      <p className="text-red-500 font-medium">Could not connect to backend</p>
+      <p className="text-slate-400 text-sm">{error}</p>
+      <p className="text-slate-400 text-xs">Make sure the backend is running on <code className="bg-slate-100 px-1 rounded">http://localhost:3001</code></p>
+    </div>
+  );
+
+  const completionRate = stats?.tasks?.total
     ? Math.round((stats.tasks.completed / stats.tasks.total) * 100)
     : 0;
 
@@ -64,9 +71,9 @@ export default function Dashboard() {
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard icon={Users} label="Total Clients" value={stats?.total_clients} color="bg-indigo-500" />
-        <StatCard icon={ClipboardList} label="Total Tasks" value={stats?.tasks.total} color="bg-slate-600" />
-        <StatCard icon={Clock} label="Pending" value={stats?.tasks.pending} color="bg-amber-500" sub={`${stats?.tasks.in_progress} in progress`} />
-        <StatCard icon={CheckCircle2} label="Completed" value={stats?.tasks.completed} color="bg-emerald-500" sub={`${completionRate}% completion rate`} />
+        <StatCard icon={ClipboardList} label="Total Tasks" value={stats?.tasks?.total} color="bg-slate-600" />
+        <StatCard icon={Clock} label="Pending" value={stats?.tasks?.pending} color="bg-amber-500" sub={`${stats?.tasks?.in_progress} in progress`} />
+        <StatCard icon={CheckCircle2} label="Completed" value={stats?.tasks?.completed} color="bg-emerald-500" sub={`${completionRate}% completion rate`} />
       </div>
 
       {/* Progress bar */}
@@ -85,9 +92,9 @@ export default function Dashboard() {
           />
         </div>
         <div className="flex gap-6 mt-4 text-xs text-slate-500">
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />Pending: {stats?.tasks.pending}</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />In Progress: {stats?.tasks.in_progress}</span>
-          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />Completed: {stats?.tasks.completed}</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />Pending: {stats?.tasks?.pending}</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />In Progress: {stats?.tasks?.in_progress}</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />Completed: {stats?.tasks?.completed}</span>
         </div>
       </div>
 
