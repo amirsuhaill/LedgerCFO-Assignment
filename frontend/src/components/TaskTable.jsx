@@ -78,6 +78,42 @@ function isOverdue(due_date, status) {
   return status !== 'Completed' && new Date(due_date) < new Date(new Date().toDateString());
 }
 
+// Mobile card for a single task
+function TaskCard({ task, clientName, showClientCol, onEdit, onDelete }) {
+  const overdue = isOverdue(task.due_date, task.status);
+  return (
+    <div className="p-4 border-b border-slate-100 dark:border-slate-800 last:border-0">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-slate-700 dark:text-slate-200 text-sm leading-snug">{task.title}</p>
+          {task.description && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">{task.description}</p>}
+          {showClientCol && clientName && (
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{clientName}</p>
+          )}
+        </div>
+        <div className="flex gap-1 shrink-0">
+          <button onClick={() => onEdit(task)}
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+            <Pencil size={13} />
+          </button>
+          <button onClick={() => onDelete(task)}
+            className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors">
+            <Trash2 size={13} />
+          </button>
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-2 mt-2.5">
+        <CategoryBadge category={task.category} />
+        <StatusBadge status={task.status} />
+        <PriorityBadge priority={task.priority} />
+        <span className={`text-xs font-medium ml-auto ${overdue ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}>
+          {overdue && '⚠ '}{task.due_date}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function TaskTable({ tasks, onRefresh, defaultClientId, clients: propClients, showClientCol = false }) {
   const [clients, setClients] = useState(propClients || []);
   const [filterStatus, setFilterStatus] = useState('');
@@ -101,13 +137,11 @@ export default function TaskTable({ tasks, onRefresh, defaultClientId, clients: 
     try { await createTask({ ...form, client_id: Number(form.client_id) }); setShowCreate(false); onRefresh(); }
     finally { setSaving(false); }
   };
-
   const handleUpdate = async (form) => {
     setSaving(true);
     try { await updateTask(editing.id, form); setEditing(null); onRefresh(); }
     finally { setSaving(false); }
   };
-
   const handleDelete = async () => {
     setSaving(true);
     try { await deleteTask(deleting.id); setDeleting(null); onRefresh(); }
@@ -117,7 +151,7 @@ export default function TaskTable({ tasks, onRefresh, defaultClientId, clients: 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-700/50">
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
           <ClipboardList size={16} className="text-indigo-500" />
           Tasks
@@ -125,12 +159,12 @@ export default function TaskTable({ tasks, onRefresh, defaultClientId, clients: 
         </div>
         <div className="flex gap-2 ml-auto flex-wrap">
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-400">
             <option value="">All Statuses</option>
             {STATUSES.map(s => <option key={s}>{s}</option>)}
           </select>
           <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
-            className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-400">
             <option value="">All Categories</option>
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
@@ -141,65 +175,81 @@ export default function TaskTable({ tasks, onRefresh, defaultClientId, clients: 
         </div>
       </div>
 
-      {/* Table */}
       {filtered.length === 0 ? (
         <div className="py-16 text-center text-slate-400 dark:text-slate-600">
           <ClipboardList size={36} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">No tasks found</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wide border-b border-slate-100 dark:border-slate-700/50">
-                <th className="text-left px-5 py-3 font-medium">Title</th>
-                {showClientCol && <th className="text-left px-5 py-3 font-medium">Client</th>}
-                <th className="text-left px-5 py-3 font-medium">Category</th>
-                <th className="text-left px-5 py-3 font-medium">Due Date</th>
-                <th className="text-left px-5 py-3 font-medium">Status</th>
-                <th className="text-left px-5 py-3 font-medium">Priority</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-              {filtered.map(task => {
-                const overdue = isOverdue(task.due_date, task.status);
-                const clientName = clients.find(c => c.id === task.client_id)?.company_name;
-                return (
-                  <tr key={task.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <p className="font-medium text-slate-700 dark:text-slate-200 leading-tight">{task.title}</p>
-                      {task.description && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-xs">{task.description}</p>}
-                    </td>
-                    {showClientCol && (
-                      <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 text-xs">{clientName || '—'}</td>
-                    )}
-                    <td className="px-5 py-3.5"><CategoryBadge category={task.category} /></td>
-                    <td className="px-5 py-3.5">
-                      <span className={`text-xs font-medium ${overdue ? 'text-red-500' : 'text-slate-500 dark:text-slate-400'}`}>
-                        {overdue && '⚠ '}{task.due_date}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5"><StatusBadge status={task.status} /></td>
-                    <td className="px-5 py-3.5"><PriorityBadge priority={task.priority} /></td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-1 justify-end">
-                        <button onClick={() => setEditing(task)}
-                          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                          <Pencil size={13} />
-                        </button>
-                        <button onClick={() => setDeleting(task)}
-                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors">
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Mobile card list */}
+          <div className="sm:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filtered.map(task => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                clientName={clients.find(c => c.id === task.client_id)?.company_name}
+                showClientCol={showClientCol}
+                onEdit={setEditing}
+                onDelete={setDeleting}
+              />
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wide border-b border-slate-100 dark:border-slate-700/50">
+                  <th className="text-left px-5 py-3 font-medium">Title</th>
+                  {showClientCol && <th className="text-left px-5 py-3 font-medium">Client</th>}
+                  <th className="text-left px-5 py-3 font-medium">Category</th>
+                  <th className="text-left px-5 py-3 font-medium">Due Date</th>
+                  <th className="text-left px-5 py-3 font-medium">Status</th>
+                  <th className="text-left px-5 py-3 font-medium">Priority</th>
+                  <th className="px-5 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                {filtered.map(task => {
+                  const overdue = isOverdue(task.due_date, task.status);
+                  const clientName = clients.find(c => c.id === task.client_id)?.company_name;
+                  return (
+                    <tr key={task.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-5 py-3.5">
+                        <p className="font-medium text-slate-700 dark:text-slate-200 leading-tight">{task.title}</p>
+                        {task.description && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-xs">{task.description}</p>}
+                      </td>
+                      {showClientCol && (
+                        <td className="px-5 py-3.5 text-slate-500 dark:text-slate-400 text-xs whitespace-nowrap">{clientName || '—'}</td>
+                      )}
+                      <td className="px-5 py-3.5"><CategoryBadge category={task.category} /></td>
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <span className={`text-xs font-medium ${overdue ? 'text-red-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                          {overdue && '⚠ '}{task.due_date}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5"><StatusBadge status={task.status} /></td>
+                      <td className="px-5 py-3.5"><PriorityBadge priority={task.priority} /></td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-1 justify-end">
+                          <button onClick={() => setEditing(task)}
+                            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                            <Pencil size={13} />
+                          </button>
+                          <button onClick={() => setDeleting(task)}
+                            className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors">
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {showCreate && (
